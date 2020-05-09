@@ -134,8 +134,8 @@ class GithubManager {
     }
     embed.setColor(embedColor);
     
-    var securearray = msgTitle.split(" ")
-    if(action == "opened" && !securearray.includes("[s]") && !securearray.includes("[S]")) {
+    var securearray = msgTitle.toLowerCase().split(" ")
+    if(action == "opened" && !securearray.includes("[s]")) {
       byondSS.byondConnector.request("?announce=" + msgTitle + "&author=" + payload.sender.login + "&id=" + payload.pull_request.number, (results) => {});
     }
 
@@ -149,7 +149,24 @@ class GithubManager {
       else if(channel.id == config.discord_channel_important_admin && securearray.includes("[admin]")) {
         channel.sendEmbed(embed);
       }
+      else if(channel.id == config.discord_channel_maintainer_chat && securearray.includes("[s]")) {
+        channel.sendEmbed(embed);
+      }
     }
+
+    this.getFileExtensions(payload.pull_request).then((extensions) => {
+      if(securearray.includes("[s]")) {
+        return;
+      }
+      for(var channel of discordSubsystem.getPrimaryGuild().channels.array()) {
+        if(channel.id == config.discord_channel_mapping && extensions.includes("dmm")) {
+          channel.sendEmbed(embed);
+        }
+        else if(channel.id == config.discord_channel_spriter && extensions.includes("dmi")) {
+          channel.sendEmbed(embed);
+        }
+      }
+    });
   }
 
   setPullRequestFlags(payload, changelog) {
@@ -335,10 +352,10 @@ class GithubManager {
         changelog.push({ 'type': 'rscdel', 'emoji': 'octagonal_sign', 'body': changelogText });
         break;
       case 'imageadd':
-        changelog.push({ 'type': 'imageadd', 'emoji': 'question', 'body': changelogText });
+        changelog.push({ 'type': 'imageadd', 'emoji': 'art', 'body': changelogText });
         break;
       case 'imagedel':
-        changelog.push({ 'type': 'imagedel', 'emoji': 'question', 'body': changelogText });
+        changelog.push({ 'type': 'imagedel', 'emoji': 'scissors', 'body': changelogText });
         break;
       case 'typo':
       case 'spellcheck':
